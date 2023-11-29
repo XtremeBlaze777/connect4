@@ -51,7 +51,9 @@ const state = async () => {
 const startgame = async () => {
   active = true;
   turns = 1;
+  winner = 0;
   gameboard = Array(6).fill().map(() => Array(7).fill(0));
+  columns = Array(7).fill(6);
 
 //   console.log(await state());
   return await state();
