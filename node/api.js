@@ -43,7 +43,8 @@ const state = async () => {
   return JSON.stringify({
     "Turn Number": turns,
     "Ongoing Game": active,
-    "Winner": winner
+    "Winner": winner,
+    "Gameboard": gameboard
   });
 };
 
@@ -51,11 +52,13 @@ const startgame = async () => {
   active = true;
   turns = 1;
   gameboard = Array(6).fill().map(() => Array(7).fill(0));
-  return JSON.stringify(gameboard);
+
+//   console.log(await state());
+  return await state();
 };
 
 const droptoken = async (column) => {
-  if (!column) {
+  if (column === undefined ) {
     console.error("Didn't provide a column");
     return JSON.stringify({
       "error": "Column not provided"
@@ -79,7 +82,8 @@ const droptoken = async (column) => {
   columns[column] -= 1;
   turns += 1;
   gameboard[columns[column]][column] = turns % 2 + 1;
-  return JSON.stringify(gameboard);
+
+  return await state();
 };
 
 const port = 3000;

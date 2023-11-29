@@ -4,13 +4,46 @@
 <head>
     <meta charset="UTF-8">
     <title>Connect4</title>
+    <style>
+        td {
+            width: 25px; /* Adjust the width as needed */
+            height: 25px; /* Adjust the height as needed */
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid black;
+        }
+
+        span {
+            display: inline-block;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+        }
+    </style>
 </head>
-<body onload="onload()">
+<body onload="load()">
     <h1>Connect4</h1>
-    <!-- center a div -->
+    <h3>Click the button under a column to drop a token</h3>
+
     <div class="center" id="message"></div>
     <div class="center" id="board"></div>
 
+    <!-- drop tokens -->
+    <div class="center">
+        <button onclick="dropToken(0)" id="button-0">1</button>
+        <button onclick="dropToken(1)" id="button-1">2</button>
+        <button onclick="dropToken(2)" id="button-2">3</button>
+        <button onclick="dropToken(3)" id="button-3">4</button>
+        <button onclick="dropToken(4)" id="button-4">5</button>
+        <button onclick="dropToken(5)" id="button-5">6</button>
+        <button onclick="dropToken(6)" id="button-6">7</button>
+    </div>
+
+    <br><br>
+    
+    <div class="center">
+        <button onclick="reset()">Reset</button>
+    </div>
     
     <script src="table.js"></script>
 </body>

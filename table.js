@@ -1,24 +1,74 @@
-const url = "http://localhost:3000"
-
-// make a 7x6 table
 player = "red";
 board = document.getElementById("board");
 msg = document.getElementById("message");
 msg.setAttribute("id", "message");
+const url = 'http://localhost:3000';
 
-function onload() {
+function load() {
+    fetch(url + '/state')
+    .then(response => response.json())
+    .then(gridData => {
+        data = JSON.parse(gridData);
+        console.log(data);
+        if (data["Ongoing Game"]) {
+            renderGrid(data.Gameboard);
+        }
+        else {
+            reset();
+        }
+    })
+    .catch(error => console.error('Error fetching grid status:', error));
+}
+
+function reset() {
     fetch(url + '/startgame')
     .then(response => response.json())
     .then(gridData => {
-      // Call a function to render the grid
-      renderGrid(gridData);
+        data = JSON.parse(gridData);
+        console.log(data);
+        renderGrid(data.Gameboard);
     })
     .catch(error => console.error('Error fetching grid data:', error));
+
+    for (var i = 0; i < 7; i++) {
+        var button = document.getElementById("button-" + i);
+        button.disabled = true;
+    }
+}
+
+function dropToken(col) {
+    fetch(url + '/droptoken?column=' + col)
+    .then(response => response.json())
+    .then(gridData => {
+        data = JSON.parse(gridData);
+        console.log(data);
+        renderGrid(data.Gameboard);
+    })
+    .catch(error => console.error('Error fetching grid data:', error));
+
+    // check if we have a winner
+    let winner = checkWin(data.Gameboard);
+    if (winner != "none") {
+        console.log(winner + " player won!");
+        msg.innerHTML = winner + " player won!";
+
+        fetch(url + '/winner');
+        // make the buttons unclickable
+        for (var i = 0; i < 7; i++) {
+            var button = document.getElementById("button-" + i);
+            button.disabled = true;
+        }
+    }
+    else {
+        player = player == "red" ? "yellow" : "red";
+        console.log("It's " + player + " player's turn");
+        // msg.innerHTML = "It's " + player + " player's turn";
+    }
 }
 
 function renderGrid(grid) {
-    rows = grid.length;
-    cols = grid[0].length;
+    rows = 6;
+    cols = 7;
     player = "red";
     var table = document.createElement("table");
     table.setAttribute("id", "table");
@@ -36,11 +86,15 @@ function renderGrid(grid) {
 
             var circle = makeCircle();
             circle.setAttribute("id", i + "-" + j + "-circle");
-            
+
+            // Set the color of the circle based on the grid value
+            if (grid[i][j] === 1) {
+                circle.style.backgroundColor = "red";
+            } else if (grid[i][j] === 2) {
+                circle.style.backgroundColor = "yellow";
+            }
 
             td.appendChild(circle);
-            // td.style.border = "1px solid black";
-
             tr.appendChild(td);
         }
         tbody.appendChild(tr);
@@ -66,15 +120,12 @@ function makeCircle() {
     return circle;
 }
 
-function checkWin() {
+function checkWin(gameboard) {
     // Check for horizontal wins
     for (var i = 0; i < 6; i++) {
         for (var j = 0; j < 4; j++) {
-            var cell = document.getElementById(i + "-" + j + "-circle");
-            if (cell.style.backgroundColor === "red" && document.getElementById(i + "-" + (j + 1) + "-circle").style.backgroundColor === "red" && document.getElementById(i + "-" + (j + 2) + "-circle").style.backgroundColor === "red" && document.getElementById(i + "-" + (j + 3) + "-circle").style.backgroundColor === "red") {
-                return "red";
-            } else if (cell.style.backgroundColor === "yellow" && document.getElementById(i + "-" + (j + 1) + "-circle").style.backgroundColor === "yellow" && document.getElementById(i + "-" + (j + 2) + "-circle").style.backgroundColor === "yellow" && document.getElementById(i + "-" + (j + 3) + "-circle").style.backgroundColor === "yellow") {
-                return "yellow";
+            if (gameboard[i][j] != 0 && gameboard[i][j] == gameboard[i][j + 1] && gameboard[i][j] == gameboard[i][j + 2] && gameboard[i][j] == gameboard[i][j + 3]) {
+                return gameboard[i][j] == 1 ? "red" : "yellow";
             }
         }
     }
@@ -82,11 +133,8 @@ function checkWin() {
     // Check for vertical wins
     for (var i = 0; i < 3; i++) {
         for (var j = 0; j < 7; j++) {
-            var cell = document.getElementById(i + "-" + j + "-circle");
-            if (cell.style.backgroundColor === "red" && document.getElementById((i + 1) + "-" + j + "-circle").style.backgroundColor === "red" && document.getElementById((i + 2) + "-" + j + "-circle").style.backgroundColor === "red" && document.getElementById((i + 3) + "-" + j + "-circle").style.backgroundColor === "red") {
-                return "red";
-            } else if (cell.style.backgroundColor === "yellow" && document.getElementById((i + 1) + "-" + j + "-circle").style.backgroundColor === "yellow" && document.getElementById((i + 2) + "-" + j + "-circle").style.backgroundColor === "yellow" && document.getElementById((i + 3) + "-" + j + "-circle").style.backgroundColor === "yellow") {
-                return "yellow";
+            if (gameboard[i][j] != 0 && gameboard[i][j] == gameboard[i + 1][j] && gameboard[i][j] == gameboard[i + 2][j] && gameboard[i][j] == gameboard[i + 3][j]) {
+                return gameboard[i][j] == 1 ? "red" : "yellow";
             }
         }
     }
@@ -94,11 +142,8 @@ function checkWin() {
     // Check for diagonal wins
     for (var i = 0; i < 3; i++) {
         for (var j = 0; j < 4; j++) {
-            var cell = document.getElementById(i + "-" + j + "-circle");
-            if (cell.style.backgroundColor === "red" && document.getElementById((i + 1) + "-" + (j + 1) + "-circle").style.backgroundColor === "red" && document.getElementById((i + 2) + "-" + (j + 2) + "-circle").style.backgroundColor === "red" && document.getElementById((i + 3) + "-" + (j + 3) + "-circle").style.backgroundColor === "red") {
-                return "red";
-            } else if (cell.style.backgroundColor === "yellow" && document.getElementById((i + 1) + "-" + (j + 1) + "-circle").style.backgroundColor === "yellow" && document.getElementById((i + 2) + "-" + (j + 2) + "-circle").style.backgroundColor === "yellow" && document.getElementById((i + 3) + "-" + (j + 3) + "-circle").style.backgroundColor === "yellow") {
-                return "yellow";
+            if (gameboard[i][j] != 0 && gameboard[i][j] == gameboard[i + 1][j + 1] && gameboard[i][j] == gameboard[i + 2][j + 2] && gameboard[i][j] == gameboard[i + 3][j + 3]) {
+                return gameboard[i][j] == 1 ? "red" : "yellow";
             }
         }
     }
@@ -106,11 +151,8 @@ function checkWin() {
     // Check for diagonal wins
     for (var i = 0; i < 3; i++) {
         for (var j = 3; j < 7; j++) {
-            var cell = document.getElementById(i + "-" + j + "-circle");
-            if (cell.style.backgroundColor === "red" && document.getElementById((i + 1) + "-" + (j - 1) + "-circle").style.backgroundColor === "red" && document.getElementById((i + 2) + "-" + (j - 2) + "-circle").style.backgroundColor === "red" && document.getElementById((i + 3) + "-" + (j - 3) + "-circle").style.backgroundColor === "red") {
-                return "red";
-            } else if (cell.style.backgroundColor === "yellow" && document.getElementById((i + 1) + "-" + (j - 1) + "-circle").style.backgroundColor === "yellow" && document.getElementById((i + 2) + "-" + (j - 2) + "-circle").style.backgroundColor === "yellow" && document.getElementById((i + 3) + "-" + (j - 3) + "-circle").style.backgroundColor === "yellow") {
-                return "yellow";
+            if (gameboard[i][j] != 0 && gameboard[i][j] == gameboard[i + 1][j - 1] && gameboard[i][j] == gameboard[i + 2][j - 2] && gameboard[i][j] == gameboard[i + 3][j - 3]) {
+                return gameboard[i][j] == 1 ? "red" : "yellow";
             }
         }
     }
@@ -118,7 +160,7 @@ function checkWin() {
     return "none";
 }
 
-function makeClickableDepracated(circle) {
+function addListenerDepracated(circle) {
     circle.addEventListener("click", function() {
         var indices = this.parentElement.id.split("-");
         var row = parseInt(indices[0]);
