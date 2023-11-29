@@ -1,0 +1,15 @@
+/* Add this to your CSS file or within a <style> tag in the head of your HTML file */
+td {
+    width: 40px; /* Adjust the width as needed */
+    height: 40px; /* Adjust the height as needed */
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid black;
+}
+
+span {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
