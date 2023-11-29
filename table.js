@@ -1,11 +1,24 @@
+const url = "http://localhost:3000"
+
 // make a 7x6 table
 player = "red";
 board = document.getElementById("board");
 msg = document.getElementById("message");
 msg.setAttribute("id", "message");
 
+function onload() {
+    fetch(url + '/startgame')
+    .then(response => response.json())
+    .then(gridData => {
+      // Call a function to render the grid
+      renderGrid(gridData);
+    })
+    .catch(error => console.error('Error fetching grid data:', error));
+}
 
-function renderTable(grid) {
+function renderGrid(grid) {
+    rows = grid.length;
+    cols = grid[0].length;
     player = "red";
     var table = document.createElement("table");
     table.setAttribute("id", "table");
@@ -23,37 +36,7 @@ function renderTable(grid) {
 
             var circle = makeCircle();
             circle.setAttribute("id", i + "-" + j + "-circle");
-            circle.addEventListener("click", function() {
-                var indices = this.parentElement.id.split("-");
-                var row = parseInt(indices[0]);
-                var col = parseInt(indices[1]);
-
-                // Check if the cell below has been colored (red or yellow)
-                bottomRow = row == rows - 1;
-                if (bottomRow || isCellColored(row + 1, col)) {
-                    // Change the color to red on click
-                    this.style.backgroundColor = player;
-                    player = player == "red" ? "yellow" : "red";
-                    // Remove the click event listener
-                    this.removeEventListener("click", arguments.callee);
-                    
-                    // Check if the player won
-                    var winner = checkWin();
-                    if (winner != "none") {
-                        console.log(winner + " player won!");
-                        msg.innerHTML = winner + " player won!";
-                        makeTable(6, 7);
-                        return;
-                    }
-                    else {
-                        console.log("It's " + player + " player's turn (accessed " + row + ", " + col + ")");
-                        msg.innerHTML = "It's " + player + " player's turn";
-                    }
-                } else {
-                    console.log("Brother, gravity?? (accessed " + row + ", " + col + ")");
-                    msg.innerHTML = "Brother, gravity??";
-                }
-            });
+            
 
             td.appendChild(circle);
             // td.style.border = "1px solid black";
@@ -133,4 +116,38 @@ function checkWin() {
     }
 
     return "none";
+}
+
+function makeClickableDepracated(circle) {
+    circle.addEventListener("click", function() {
+        var indices = this.parentElement.id.split("-");
+        var row = parseInt(indices[0]);
+        var col = parseInt(indices[1]);
+
+        // Check if the cell below has been colored (red or yellow)
+        bottomRow = row == rows - 1;
+        if (bottomRow || isCellColored(row + 1, col)) {
+            // Change the color to red on click
+            this.style.backgroundColor = player;
+            player = player == "red" ? "yellow" : "red";
+            // Remove the click event listener
+            this.removeEventListener("click", arguments.callee);
+            
+            // Check if the player won
+            var winner = checkWin();
+            if (winner != "none") {
+                console.log(winner + " player won!");
+                msg.innerHTML = winner + " player won!";
+                makeTable(6, 7);
+                return;
+            }
+            else {
+                console.log("It's " + player + " player's turn (accessed " + row + ", " + col + ")");
+                msg.innerHTML = "It's " + player + " player's turn";
+            }
+        } else {
+            console.log("Brother, gravity?? (accessed " + row + ", " + col + ")");
+            msg.innerHTML = "Brother, gravity??";
+        }
+    });
 }
